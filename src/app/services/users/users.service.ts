@@ -13,4 +13,12 @@ export class UsersService {
       .map(res => res.json());
   }
 
+  findOne(id) {
+    return this.http.get('./assets/test-api/users.json')
+      .map(res => {
+        let response = res.json();
+        return response.find((user) => { return user.id === id; });
+      });
+  }
+
 }

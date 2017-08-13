@@ -39,6 +39,10 @@ describe('UsersService', () => {
     expect(usersService.all).toBeDefined();
   });
 
+  it('should have a findOne method', () => {
+    expect(usersService.findOne).toBeDefined();
+  });
+
   describe('.all()', () => {
     it('should return a list of users', () => {
       mockBackend.connections.subscribe((connection) => {
@@ -50,6 +54,21 @@ describe('UsersService', () => {
 
       usersService.all().subscribe(res => {
         expect(res).toEqual(userList);
+      });
+    });
+  });
+
+  describe('.findOne()', () => {
+    it('should return a single user', () => {
+      mockBackend.connections.subscribe((connection) => {
+        connection.mockRespond(new Response(new ResponseOptions({
+          status: 200,
+          body: JSON.stringify(userList)
+        })));
+      });
+
+      usersService.findOne('2').subscribe(res => {
+        expect(res).toEqual(userList[1]);
       });
     });
   });
