@@ -47,9 +47,9 @@ describe('HomeComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
 
     usersService = fixture.debugElement.injector.get(UsersService);
-    fixture.detectChanges();
     userPanels = fixture.debugElement.queryAll(By.css('.panel-title'));
     profileLinks = fixture.debugElement.queryAll(By.css('a'));
   });
