@@ -56,6 +56,19 @@ describe('UsersService', () => {
         expect(res).toEqual(userList);
       });
     });
+
+    it('should throw an error if no users are found', () => {
+      mockBackend.connections.subscribe((connection) => {
+        connection.mockError(new Response(new ResponseOptions({
+          status: 404,
+          body: JSON.stringify({})
+        })));
+      });
+
+      usersService.all().subscribe(res => {}, (err) => {
+        expect(err).toBeDefined();
+      });
+    });
   });
 
   describe('.findOne()', () => {
