@@ -9,12 +9,15 @@ import { UsersService } from '../services/users/users.service';
 })
 export class HomeComponent implements OnInit {
   users;
+  error;
 
   constructor(private usersService: UsersService) { }
 
   ngOnInit() {
     this.usersService.all().subscribe((res) => {
       this.users = res;
+    }, (err) => {
+      this.error = 'Something went wrong!';
     });
   }
 

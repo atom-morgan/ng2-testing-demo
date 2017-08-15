@@ -17,12 +17,19 @@ class MockUsersService {
   });
 }
 
+class MockUsersServiceError {
+  all = jasmine.createSpy('all').and.callFake(() => {
+    return Observable.throw({});
+  });
+}
+
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
   let usersService: UsersService;
   let userPanels: DebugElement[];
   let profileLinks: DebugElement[];
+  let errorMessage: DebugElement;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -33,48 +40,77 @@ describe('HomeComponent', () => {
     });
   }));
 
-  beforeEach(async(() => {
-    TestBed.overrideComponent(HomeComponent, {
-      set: {
-        providers: [
-          { provide: UsersService, useClass: MockUsersService }
-        ]
-      }
-    })
-    .compileComponents();
-  }));
+  describe('with users to show', () => {
+    beforeEach(async(() => {
+      TestBed.overrideComponent(HomeComponent, {
+        set: {
+          providers: [
+            { provide: UsersService, useClass: MockUsersService }
+          ]
+        }
+      })
+      .compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(HomeComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
 
-    usersService = fixture.debugElement.injector.get(UsersService);
-    userPanels = fixture.debugElement.queryAll(By.css('.panel-title'));
-    profileLinks = fixture.debugElement.queryAll(By.css('a'));
+      usersService = fixture.debugElement.injector.get(UsersService);
+      userPanels = fixture.debugElement.queryAll(By.css('.panel-title'));
+      profileLinks = fixture.debugElement.queryAll(By.css('a'));
+    });
+
+    it('should be created', () => {
+      expect(component).toBeTruthy();
+    });
+
+    it('should initialize with a call to the UsersService to get a list of users', () => {
+      expect(usersService.all).toHaveBeenCalled();
+      expect(component.users).toEqual(userList);
+    });
+
+    it('should display the users in the view', () => {
+      expect(userPanels.length).toEqual(4);
+      expect(userPanels[0].nativeElement.textContent).toEqual('Jane');
+      expect(userPanels[1].nativeElement.textContent).toEqual('Bob');
+      expect(userPanels[2].nativeElement.textContent).toEqual('Jim');
+      expect(userPanels[3].nativeElement.textContent).toEqual('Bill');
+    });
+
+    it('should have routerLink set to the user profile', () => {
+      expect(profileLinks[0].attributes['ng-reflect-router-link']).toEqual('/user/1');
+      expect(profileLinks[1].attributes['ng-reflect-router-link']).toEqual('/user/2');
+      expect(profileLinks[2].attributes['ng-reflect-router-link']).toEqual('/user/3');
+      expect(profileLinks[3].attributes['ng-reflect-router-link']).toEqual('/user/4');
+    });
   });
 
-  it('should be created', () => {
-    expect(component).toBeTruthy();
-  });
+  describe('with no users to show', () => {
+    beforeEach(async(() => {
+      TestBed.overrideComponent(HomeComponent, {
+        set: {
+          providers: [
+            { provide: UsersService, useClass: MockUsersServiceError }
+          ]
+        }
+      })
+      .compileComponents();
+    }));
 
-  it('should initialize with a call to the UsersService to get a list of users', () => {
-    expect(usersService.all).toHaveBeenCalled();
-    expect(component.users).toEqual(userList);
-  });
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
 
-  it('should display the users in the view', () => {
-    expect(userPanels.length).toEqual(4);
-    expect(userPanels[0].nativeElement.textContent).toEqual('Jane');
-    expect(userPanels[1].nativeElement.textContent).toEqual('Bob');
-    expect(userPanels[2].nativeElement.textContent).toEqual('Jim');
-    expect(userPanels[3].nativeElement.textContent).toEqual('Bill');
-  });
+      usersService = fixture.debugElement.injector.get(UsersService);
+      errorMessage = fixture.debugElement.query(By.css('.alert'));
+    });
 
-  it('should have routerLink set to the user profile', () => {
-    expect(profileLinks[0].attributes['ng-reflect-router-link']).toEqual('/user/1');
-    expect(profileLinks[1].attributes['ng-reflect-router-link']).toEqual('/user/2');
-    expect(profileLinks[2].attributes['ng-reflect-router-link']).toEqual('/user/3');
-    expect(profileLinks[3].attributes['ng-reflect-router-link']).toEqual('/user/4');
+    it('should display the error message in the view', () => {
+      expect(component.error).toEqual('Something went wrong!');
+      expect(errorMessage.nativeElement.textContent).toEqual('Something went wrong!');
+    });
   });
 });
